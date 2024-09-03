@@ -18,6 +18,7 @@ import os
 import pickle
 import random
 from typing import Any, Dict, List
+import shutil
 
 
 def print_progress(sentence: str, progress: int, out_of: int) -> None:
@@ -26,7 +27,12 @@ def print_progress(sentence: str, progress: int, out_of: int) -> None:
     print()
 
   sentence = sentence + ' ' if sentence[-1] != ' ' else sentence
-  num_remaining = os.get_terminal_size().columns - len(sentence) - 2
+
+  try:
+    num_remaining = shutil.get_terminal_size().columns - len(sentence) - 2
+  except OSError:
+    # Fallback to a default width if terminal size can't be determined
+    num_remaining = 80 - len(sentence) - 2
 
   if num_remaining >= 5:
     num_fill = int(float(progress / out_of) * num_remaining) or 1
