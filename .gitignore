@@ -1,3 +1,4 @@
 *.pickle
 *.pyc
 settings.json
+*.csv
