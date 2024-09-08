@@ -6,8 +6,8 @@ classes = {
   'location': ['western', 'eastern']
 }
 
-affirmative_classes = {
+affirmative_class = {
   'age': 'young',
   'gender': 'female',
-  'locatioon': 'eastern'
+  'location': 'eastern'
 }
