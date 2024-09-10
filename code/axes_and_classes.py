@@ -1,3 +1,6 @@
+"""
+List all axes, their classes and the affirmative class.
+"""
 axes = ['age', 'gender', 'location']
 
 classes = {
