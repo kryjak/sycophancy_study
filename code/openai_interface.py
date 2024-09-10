@@ -1,5 +1,7 @@
 import openai
 import os
+import json
+import pandas as pd
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -13,4 +15,50 @@ def get_completion(prompt, system_prompt=SYSTEM_PROMPT, model="gpt-4o-mini-2024-
         temperature=temperature
     )
     return response.choices[0].message.content
+
+def create_fine_tuning_data(df: pd.DataFrame, output_file: str) -> None:
+    """Create data for fine-tuning and submit a fine-tuning job the the API"""
+    # Create a list to hold the data for fine-tuning
+    fine_tuning_data = []
+
+    # loop through the DataFrame and create the required data structure:
+    for _, row in df.iterrows():
+        fine_tuning_data.append({
+            "messages": [
+                {"role": "system", "content": "SYSTEM_PROMPT"},
+                {"role": "user", "content": row['prompt']},
+                {"role": "assistant", "content": row['expected_answer']}
+            ]
+        })
+
+    # Save the data to a file in .jsonl format
+    with open(output_file, 'w') as f:
+        for item in fine_tuning_data:
+            f.write(json.dumps(item) + '\n')
+
+def upload_files(file_path: str) -> str:
+    """Upload a file to OpenAI and return the file ID"""
+    response = client.files.create(
+        file=open(file_path, "r"),
+        purpose='fine-tune'
+    )
+    return response.id
+
+def submit_fine_tuning_job(file_path: str, model: str = "gpt-4o-mini-2024-07-18", **kwargs) -> str:
+    """Submit a fine-tuning job to the API"""
+    response = client.fine_tuning.jobs.create(
+        training_file=file_path,
+        model=model,
+        **kwargs
+    )
+
+    return response.id
+
+def list_fine_tuning_jobs(n_jobs: int = 10) -> list:
+    """List all fine-tuning jobs"""
+    return client.fine_tuning.jobs.list(limit=n_jobs)
+
+def retrieve_fine_tuning_job(job_id: str) -> dict:
+    """Retrieve a fine-tuning job"""
+    return client.fine_tuning.jobs.retrieve(job_id)
 
