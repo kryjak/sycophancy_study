@@ -72,3 +72,5 @@ if __name__ == '__main__':
     N = 100
     df_subset = create_data_subset(N)
     df_train, df_test, df_filtered = filter_data(df_subset)
+else:
+    from config import *

@@ -51,7 +51,7 @@ def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_mode
         answer = get_completion(prompt, model=fine_tuned_model)
         df.at[index, 'actual_answer'] = answer
 
-    df.to_csv(f'data_source_nlp/results_{experiment}_{axis}.csv', index=False)
+    df.to_csv(f'data_storage/results_{experiment}_{axis}.csv', index=False)
     return df
 
 def run_all_experiments(fine_tuned_models: List[str]) -> None:
@@ -63,7 +63,7 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
     for experiment in experiments:
         for axis in axes:
             print(f'Running experiment {experiment} for axis {axis}...')
-            df = pd.read_csv(f'data_source_nlp/test_prompts_{experiment}_{axis}.csv')
+            df = pd.read_csv(f'data_storage/test_prompts_{experiment}_{axis}.csv')
             df = run_experiment(df, experiment, axis, fine_tuned_models)
 
     # Also test the filtered out statements (without user's claims) on fine-tuned models.
@@ -74,9 +74,9 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
         for case in ['train', 'test']:  
             fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
 
-            df = pd.read_csv(f'data_source_nlp/inputs_label_pairs_filtered_{case}.csv')
+            df = pd.read_csv(f'data_storage/inputs_label_pairs_filtered_{case}.csv')
             df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
-            df.to_csv(f'data_source_nlp/filtering_knowledge_check_{case}_{axis}.csv', index=False)
+            df.to_csv(f'data_storage/filtering_knowledge_check_{case}_{axis}.csv', index=False)
 
     print('-' * 80)
     print('Experiments completed!')
@@ -93,4 +93,5 @@ if __name__ == '__main__':
 
     fine_tuned_models = wait_for_fine_tuning_jobs(n_jobs)
     run_all_experiments(fine_tuned_models)
-
+else:
+    from config import *
