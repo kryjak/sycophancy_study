@@ -9,54 +9,38 @@ import os
 from axes_and_classes import axes
 from sklearn.model_selection import train_test_split
 
-PROVIDER = 'openai'
-MODEL = 'gpt-4o-mini-2024-07-18'
-WANDB_INTEGRATION = True
-
-if PROVIDER == 'openai':
-    from openai_interface import *
-else:
-    raise ValueError(f"Unknown provider: {PROVIDER}")
-
-config_dict = {
-    'model': MODEL,
-    'hyperparameters': {
-        'n_epochs': 1,
-        'batch_size': 'auto',
-        'learning_rate_multiplier': 'auto',
-    },
-    'seed': 42
-}
-
-if WANDB_INTEGRATION:
-    WANDB_PROJECT = 'sycophancy_study'
-    WANDB_ENTITY = os.environ['WANDB_ENTITY']
-
-    config_dict['integrations'] = {
-        'type': 'wandb',
-        'wandb': {
-            'project': WANDB_PROJECT,
-            'entity': WANDB_ENTITY
-        }
-    }
 
 # submit fine-tuning jobs for each axis
-for axis in axes:
-    train_prompts_df = pd.read_csv(f'data_source_nlp/train_prompts_{axis}.csv')
-    # train/validation split
-    train_prompts_df, validation_prompts_df = train_test_split(train_prompts_df, test_size=0.2, random_state=42)
-    # create fine-tuning data
-    create_fine_tuning_data(train_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
-    create_fine_tuning_data(validation_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
-    # upload files to OpenAI
-    train_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
-    validation_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
-    # submit fine-tuning job
-    config_dict['validation_file'] = validation_file_id
-    config_dict['suffix'] = f'{axis}_finetuned'
-    job_id = submit_fine_tuning_job(
-        training_file=train_file_id,
-        validation_file=validation_file_id,
-        **config_dict
-    )
-    print(f'Fine-tuning job submitted: {job_id}')
+def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
+    for axis in axes:
+        train_prompts_df = pd.read_csv(f'data_source_nlp/train_prompts_{axis}.csv')
+        # train/validation split
+        train_prompts_df, validation_prompts_df = train_test_split(train_prompts_df, test_size=0.2, random_state=42)
+        # create fine-tuning data
+        create_fine_tuning_data(train_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
+        create_fine_tuning_data(validation_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
+        # upload files to OpenAI
+        train_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
+        validation_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
+        # submit fine-tuning job
+        finetuning_config['validation_file'] = validation_file_id
+        finetuning_config['suffix'] = f'{axis}_finetuned'
+        job_id = submit_fine_tuning_job(
+            training_file=train_file_id,
+            validation_file=validation_file_id,
+            **finetuning_config
+        )
+        print(f'Fine-tuning job submitted: {job_id}')
+
+if __name__ == '__main__':
+    PROVIDER = 'openai'
+    MODEL = 'gpt-4o-mini-2024-07-18'
+    WANDB_INTEGRATION = True
+
+    if PROVIDER == 'openai':
+        from openai_interface import *
+        from openai_finetuning_config import *
+    else:
+        raise ValueError(f"Unknown provider: {PROVIDER}")
+
+    submit_fine_tuning_jobs(axes)

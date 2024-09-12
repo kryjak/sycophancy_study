@@ -11,43 +11,31 @@ import seaborn as sns
 import time
 from axes_and_classes import axes
 from experiment_list import experiments
-from typing import List
+from typing import List, Optional
 
-PROVIDER = 'openai'
-MODEL = 'gpt-4o-mini-2024-07-18'
+def wait_for_fine_tuning_jobs(n_jobs: Optional[int] = None) -> List[str]:
+    while True:
+        print('Waiting for all fine-tuning jobs to complete...')
+        time.sleep(60)
 
-if PROVIDER == 'openai':
-    from openai_interface import *
-else:
-    raise ValueError(f"Unknown provider: {PROVIDER}")
+        jobs = list_fine_tuning_jobs(n_jobs)
 
-n_jobs = len(axes)
-
-# list all fine-tuning jobs:
-print('Listing all fine-tuning jobs:')
-print(list_fine_tuning_jobs())
-
-# wait if all jobs are completed:
-while True:
-    print('Waiting for all fine-tuning jobs to complete...')
-    time.sleep(60)
-    
-    jobs = list_fine_tuning_jobs(n_jobs)
-    
-    all_completed = True
-    for job in jobs:
-        if job.get('fine_tuned_model') is None:
-            all_completed = False
+        all_completed = True
+        for job in jobs:
+            if job.get('fine_tuned_model') is None:
+                all_completed = False
+                break
+            
+        if all_completed:
+            print('All fine-tuning jobs are completed!')
             break
-    
-    if all_completed:
-        print('All fine-tuning jobs are completed!')
-        break
 
-# retrieve fine-tuned model names:
-print('Retrieving fine-tuned model names:')
-fine_tuned_models = [job.get('fine_tuned_model') for job in jobs]
-print(f'Fine-tuned models: {fine_tuned_models}')
+    # retrieve fine-tuned model names:
+    print('Retrieving fine-tuned model names:')
+    fine_tuned_models = [job.get('fine_tuned_model') for job in jobs]
+    print(f'Fine-tuned models: {fine_tuned_models}')
+
+    return fine_tuned_models
 
 ### RUN EXPERIMENTS ###
 def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_models: List[str]) -> pd.DataFrame:
@@ -67,29 +55,44 @@ def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_mode
     df.to_csv(f'data_source_nlp/results_{experiment}_{axis}.csv', index=False)
     return df
 
-print(f'Experiments to be run: {experiments}')
-print(f'Axes to be run: {axes}')
-print('Starting experiments...')
-print('-' * 80)
+def run_all_experiments(fine_tuned_models: List[str]) -> None:
+    print(f'Experiments to be run: {experiments}')
+    print(f'Axes to be run: {axes}')
+    print('Starting experiments...')
+    print('-' * 80)
 
-for experiment in experiments:
+    for experiment in experiments:
+        for axis in axes:
+            print(f'Running experiment {experiment} for axis {axis}...')
+            df = pd.read_csv(f'data_source_nlp/test_prompts_{experiment}_{axis}.csv')
+            df = run_experiment(df, experiment, axis, fine_tuned_models)
+
+    # Also test the filtered out statements (without user's claims) on fine-tuned models.
+    # This is to check if fine-tuning affects the underlying knowledge.
+    # This is an equivalent experiment to Appendix A.4 of [2308.03958].
+    print(f'Now checking if fine-tuning affects the underlying knowledge...')
     for axis in axes:
-        print(f'Running experiment {experiment} for axis {axis}...')
-        df = pd.read_csv(f'data_source_nlp/test_prompts_{experiment}_{axis}.csv')
-        df = run_experiment(df, experiment, axis, fine_tuned_models)
+        for case in ['train', 'test']:  
+            suffix = f'{axis}_finetuned'
+            fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
 
-# Also test the filtered out statements (without user's claims) on fine-tuned models.
-# This is to check if fine-tuning affects the underlying knowledge.
-# This is an equivalent experiment to Appendix A.4 of [2308.03958].
-print(f'Now checking if fine-tuning affects the underlying knowledge...')
-for axis in axes:
-    for case in ['train', 'test']:  
-        suffix = f'{axis}_finetuned'
-        fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
+            df = pd.read_csv(f'data_source_nlp/inputs_label_pairs_filtered_{case}.csv')
+            df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
+            df.to_csv(f'data_source_nlp/filtering_knowledge_check_{case}_{axis}.csv', index=False)
 
-        df = pd.read_csv(f'data_source_nlp/inputs_label_pairs_filtered_{case}.csv')
-        df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
-        df.to_csv(f'data_source_nlp/filtering_knowledge_check_{case}_{axis}.csv', index=False)
+    print('-' * 80)
+    print('Experiments completed!')
 
-print('-' * 80)
-print('Experiments completed!')
+if __name__ == '__main__':
+    PROVIDER = 'openai'
+    MODEL = 'gpt-4o-mini-2024-07-18'
+    n_jobs = len(axes)
+
+    if PROVIDER == 'openai':
+        from openai_interface import *
+    else:
+        raise ValueError(f"Unknown provider: {PROVIDER}")
+
+    fine_tuned_models = wait_for_fine_tuning_jobs(n_jobs)
+    run_all_experiments(fine_tuned_models)
+

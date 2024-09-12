@@ -13,20 +13,22 @@ if 'input' not in df_test.columns or 'label' not in df_test.columns:
 print(df_train.head())
 print(df_test.head())
 
+def create_prompts(axes: list[str]) -> None:
+    # Convert to dictionaries because `gd.generate_nlp_data_easy` expects a dictionary:
+    dict_train = dict(zip(df_train['input'], df_train['label']))
+    dict_test = dict(zip(df_test['input'], df_test['label']))
 
-# Convert to dictionaries because `gd.generate_nlp_data_easy` expects a dictionary:
+    NUM_EXAMPLES_TRAIN = len(dict_train)
+    NUM_EXAMPLES_TEST = len(dict_test)
 
-dict_train = dict(zip(df_train['input'], df_train['label']))
-dict_test = dict(zip(df_test['input'], df_test['label']))
+    for axis in axes:
+        train_prompts_df = gd.generate_nlp_data_easy(dict_train, axis, NUM_EXAMPLES_TRAIN)
+        test_prompts_easy_df = gd.generate_nlp_data_easy(dict_test, axis, NUM_EXAMPLES_TEST)
+        test_prompts_hard_df = gd.generate_nlp_data_hard(dict_test, axis, NUM_EXAMPLES_TEST)
 
-NUM_EXAMPLES_TRAIN = len(dict_train)
-NUM_EXAMPLES_TEST = len(dict_test)
+        train_prompts_df.to_csv(f'data_source_nlp/train_prompts_{axis}.csv', index=False)
+        test_prompts_easy_df.to_csv(f'data_source_nlp/test_prompts_easy_{axis}.csv', index=False)
+        test_prompts_hard_df.to_csv(f'data_source_nlp/test_prompts_hard_{axis}.csv', index=False)
 
-for axis in axes:
-    train_prompts_df = gd.generate_nlp_data_easy(dict_train, axis, NUM_EXAMPLES_TRAIN)
-    test_prompts_easy_df = gd.generate_nlp_data_easy(dict_test, axis, NUM_EXAMPLES_TEST)
-    test_prompts_hard_df = gd.generate_nlp_data_hard(dict_test, axis, NUM_EXAMPLES_TEST)
-
-    train_prompts_df.to_csv(f'data_source_nlp/train_prompts_{axis}.csv', index=False)
-    test_prompts_easy_df.to_csv(f'data_source_nlp/test_prompts_easy_{axis}.csv', index=False)
-    test_prompts_hard_df.to_csv(f'data_source_nlp/test_prompts_hard_{axis}.csv', index=False)
+if __name__ == '__main__':
+    create_prompts(axes)
