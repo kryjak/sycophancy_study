@@ -51,17 +51,20 @@ print(f'Fine-tuned models: {fine_tuned_models}')
 
 ### RUN EXPERIMENTS ###
 def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_models: List[str]) -> pd.DataFrame:
+    suffix = f'{axis}_finetuned'
+    # select the fine-tuned model for the relevant axis:
+    fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
+
     for index, row in df.iterrows():
         prompt = row['prompt']
 
         baseline_answer = get_completion(prompt, model=MODEL)
         df.at[index, 'baseline_answer'] = baseline_answer
 
-        for model in fine_tuned_models:
-            answer = get_completion(prompt, model=model)
-            df.at[index, 'actual_answer'] = answer
+        answer = get_completion(prompt, model=fine_tuned_model)
+        df.at[index, 'actual_answer'] = answer
 
-    df.to_csv(f'data_source_nlp/test_prompts_{experiment}_{axis}_results.csv', index=False)
+    df.to_csv(f'data_source_nlp/results_{experiment}_{axis}.csv', index=False)
     return df
 
 print(f'Experiments to be run: {experiments}')
@@ -74,6 +77,12 @@ for experiment in experiments:
         print(f'Running experiment {experiment} for axis {axis}...')
         df = pd.read_csv(f'data_source_nlp/test_prompts_{experiment}_{axis}.csv')
         df = run_experiment(df, experiment, axis, fine_tuned_models)
+
+# Also test the filtered out statements (without user's claims) on fine-tuned models.
+# This is to check if fine-tuning affects the underlying knowledge.
+# This is an equivalent experiment to Appendix A.4 of [2308.03958].
+
+df = pd.read_csv('data_source_nlp/filtered_out_statements.csv')
 
 print('-' * 80)
 print('Experiments completed!')
