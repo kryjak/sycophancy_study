@@ -56,7 +56,10 @@ def submit_fine_tuning_job(training_file: str, model: str = "gpt-4o-mini-2024-07
 
 def list_fine_tuning_jobs(n_jobs: int = 10) -> list:
     """List all fine-tuning jobs"""
-    return client.fine_tuning.jobs.list(limit=n_jobs)
+    # client.fine_tuning.jobs returns some weird OpenAI object that does not have len() method
+    # when doing list() on it, for some reason it ignores the limit and returns all jobs
+    # but we can avoid this issue if we retrieve just the .data attribute of this object
+    return client.fine_tuning.jobs.list(limit=n_jobs).data
 
 def retrieve_fine_tuning_job(job_id: str) -> dict:
     """Retrieve a fine-tuning job"""
