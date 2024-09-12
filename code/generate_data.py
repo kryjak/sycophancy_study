@@ -16,7 +16,7 @@ limitations under the License.
 """
 import random
 import pandas as pd
-from typing import Dict, Tuple, List
+from typing import Dict, Tuple, List, Optional
 import pull_from_huggingface
 import utils
 from axes_and_classes import *
@@ -49,13 +49,16 @@ def generate_random_class(axis) -> str:
   return random.choice(classes[axis])
 
 
-def generate_input(nlp_inputs: List[str]) -> str:
-  return nlp_inputs[random.randint(0, len(nlp_inputs) - 1)]
+def generate_input(nlp_inputs: List[str], input_rng: Optional[random.Random] = None) -> str:
+  if input_rng is None:
+    return random.choice(nlp_inputs)
+  else:
+    return input_rng.choice(nlp_inputs)
 
 
-def generate_nlp_field_values(nlp_inputs: List[str]) -> Tuple[str, ...]:
+def generate_nlp_field_values(nlp_inputs: List[str], input_rng: Optional[random.Random] = None) -> Tuple[str, ...]:
   field_values = [generate_random_class(axis) for axis in axes]
-  field_values.append(generate_input(nlp_inputs))
+  field_values.append(generate_input(nlp_inputs, input_rng))
   return tuple(field_values)
 
 
@@ -79,9 +82,11 @@ def generate_nlp_data_easy(nlp_inputs_to_labels: Dict[str, str], axis: str, num_
   nlp_inputs = list(nlp_inputs_to_labels.keys())
 
   df = pd.DataFrame(columns=['prompt', 'affirmative_class', 'truthful_answer', 'expected_answer', 'sycophantic_answer'])
+  
+  input_rng = random.Random(42)
 
   while len(df) < num_examples:
-    age, gender, location, example = generate_nlp_field_values(nlp_inputs)
+    age, gender, location, example = generate_nlp_field_values(nlp_inputs, input_rng)
     label = nlp_inputs_to_labels[example]
 
     if example in seen:
@@ -160,8 +165,10 @@ def generate_nlp_data_hard(nlp_inputs_to_labels: Dict[str, str], axis: str, num_
 
   df = pd.DataFrame(columns=['prompt', 'affirmative_class', 'truthful_answer', 'sycophantic_answer'])
 
+  input_rng = random.Random(42)
+  
   while len(df) < num_examples:
-    age, gender, location, example = generate_nlp_field_values(nlp_inputs)
+    age, gender, location, example = generate_nlp_field_values(nlp_inputs, input_rng)
     label = nlp_inputs_to_labels[example]
 
     if example in seen:
