@@ -8,8 +8,6 @@ import pandas as pd
 import os
 from axes_and_classes import axes
 from sklearn.model_selection import train_test_split
-
-
 # submit fine-tuning jobs for each axis
 def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
     for axis in axes:
@@ -23,11 +21,10 @@ def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
         train_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
         validation_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
         # submit fine-tuning job
-        finetuning_config['validation_file'] = validation_file_id
-        finetuning_config['suffix'] = f'{axis}_finetuned'
         job_id = submit_fine_tuning_job(
             training_file=train_file_id,
             validation_file=validation_file_id,
+            suffix=f'{axis}_finetuned',
             **finetuning_config
         )
         print(f'Fine-tuning job submitted: {job_id}')
@@ -40,7 +37,8 @@ if __name__ == '__main__':
     if PROVIDER == 'openai':
         from openai_interface import *
         from openai_finetuning_config import *
+        finetuning_config = get_finetuning_config(MODEL, WANDB_INTEGRATION)
     else:
         raise ValueError(f"Unknown provider: {PROVIDER}")
 
-    submit_fine_tuning_jobs(axes)
+    submit_fine_tuning_jobs(axes, finetuning_config)

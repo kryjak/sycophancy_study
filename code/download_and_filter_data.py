@@ -14,7 +14,6 @@ def create_data_subset(N: int) -> pd.DataFrame:
     df_subset = pd.DataFrame.from_dict(NLP_INPUTS_TO_LABELS_SUBSET, orient='index', columns=['label'])
     df_subset.reset_index(inplace=True)
     df_subset.columns = ['input', 'label']
-    print(df_subset.head())
 
     df_subset.to_csv('data_source_nlp/input_label_pairs_unfiltered.csv', index=False)
 
@@ -59,7 +58,7 @@ def filter_data(df_unfiltered: pd.DataFrame) -> pd.DataFrame:
     df_train.to_csv('data_source_nlp/input_label_pairs_filtered_train.csv', index=False)
     df_test.to_csv('data_source_nlp/input_label_pairs_filtered_test.csv', index=False)
 
-    return df_filtered
+    return df_train, df_test, df_filtered
 
 if __name__ == '__main__':
     PROVIDER = 'openai'
@@ -72,4 +71,4 @@ if __name__ == '__main__':
 
     N = 100
     df_subset = create_data_subset(N)
-    _ = filter_data(df_subset)
+    df_train, df_test, df_filtered = filter_data(df_subset)
