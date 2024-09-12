@@ -15,47 +15,39 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+# -----------SETTINGS-----------
+from config import *
+
+# -----------IMPORTS-----------
 import axes_and_classes as ac
 import download_and_filter_data as dfd
-import prepare_data as pd
 import fine_tune as ft
 import run_experiments as re
-
-# -----------SETTINGS-----------
-N = 100 # choose how many NLP statements to use for filtering
-PROVIDER = 'openai'
-MODEL = 'gpt-4o-mini-2024-07-18'
-WANDB_INTEGRATION = True
-
-if PROVIDER == 'openai':
-    from openai_interface import get_completion
-    from openai_finetuning_config import *
-else:
-    raise ValueError(f'Unknown provider: {PROVIDER}')
 
 # -----------DATASET PIPELINE-----------
 print(f'Axes used: {ac.axes}')
 print(f'Their classes: {ac.classes}')
 print(f'...and affirmative class: {ac.affirmative_class}')
 
-print(f'Creating a subset of {N} NLP statements...')
+print('Creating a subset of {N} NLP statements...')
 df_subset = dfd.create_data_subset(N)
-print(f'Filtering out statements for which the model does not know the answer...')
-_ = dfd.filter_data(df_subset)
-print(f'Filtering complete.')
+print('Filtering out statements for which the model does not know the answer...')
+df_train, df_test, _ = dfd.filter_data(df_subset)
+print('Filtering complete.')
 
-print(f'Generating prompts for fine-tuning and experiments...')
-pd.create_prompts(ac.axes)
-print(f'Prompts generated.')
+import prepare_data as pd
+print('Generating prompts for fine-tuning and experiments...')
+pd.create_prompts(df_train, df_test, ac.axes)
+print('All prompts generated.')
 
-print(f'Submitting fine-tuning jobs...')
-ft.submit_fine_tuning_jobs(ac.axes)
-print(f'All fine-tuning jobs submitted.')
+print('Submitting fine-tuning jobs...')
+ft.submit_fine_tuning_jobs(ac.axes, finetuning_config)
+print('All fine-tuning jobs submitted.')
 
-print(f'Running experiments...')
+print('Running experiments...')
 n_jobs = len(ac.axes)
 fine_tuned_models = re.wait_for_fine_tuning_jobs(n_jobs)
 assert len(fine_tuned_models) == n_jobs, f'Expected {n_jobs} fine-tuned models, but got {len(fine_tuned_models)}'
-re.run_experiments(fine_tuned_models)
-print(f'All experiments completed.')
+re.run_all_experiments(fine_tuned_models)
+print('All experiments completed.')
 
