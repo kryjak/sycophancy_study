@@ -29,7 +29,7 @@ print(f'Axes used: {ac.axes}')
 print(f'Their classes: {ac.classes}')
 print(f'...and affirmative class: {ac.affirmative_class}')
 
-print('Creating a subset of {N} NLP statements...')
+print(f'Creating a subset of {N} NLP statements...')
 df_subset = dfd.create_data_subset(N)
 print('Filtering out statements for which the model does not know the answer...')
 df_train, df_test, _ = dfd.filter_data(df_subset)
