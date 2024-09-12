@@ -11,15 +11,17 @@ from sklearn.model_selection import train_test_split
 # submit fine-tuning jobs for each axis
 def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
     for axis in axes:
-        train_prompts_df = pd.read_csv(f'data_source_nlp/train_prompts_{axis}.csv')
+        train_prompts_df = pd.read_csv(f'data_storage/train_prompts_{axis}.csv')
         # train/validation split
         train_prompts_df, validation_prompts_df = train_test_split(train_prompts_df, test_size=0.2, random_state=42)
         # create fine-tuning data
-        create_fine_tuning_data(train_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
-        create_fine_tuning_data(validation_prompts_df, f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
+        create_fine_tuning_data(train_prompts_df, f'data_storage/fine_tuning_data_{axis}.jsonl')
+        create_fine_tuning_data(validation_prompts_df, f'data_storage/fine_tuning_data_{axis}_validation.jsonl')
         # upload files to OpenAI
-        train_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}.jsonl')
-        validation_file_id = upload_files(f'data_source_nlp/fine_tuning_data_{axis}_validation.jsonl')
+        train_file_id = upload_files(f'data_storage/fine_tuning_data_{axis}.jsonl')
+        validation_file_id = upload_files(f'data_storage/fine_tuning_data_{axis}_validation.jsonl')
+        print(f'Number of training samples: {len(train_prompts_df)}')
+        print(f'Number of validation samples: {len(validation_prompts_df)}')
         # submit fine-tuning job
         job_id = submit_fine_tuning_job(
             training_file=train_file_id,

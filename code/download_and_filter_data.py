@@ -15,7 +15,7 @@ def create_data_subset(N: int) -> pd.DataFrame:
     df_subset.reset_index(inplace=True)
     df_subset.columns = ['input', 'label']
 
-    df_subset.to_csv('data_source_nlp/input_label_pairs_unfiltered.csv', index=False)
+    df_subset.to_csv('data_storage/input_label_pairs_unfiltered.csv', index=False)
 
     return df_subset
 
@@ -49,14 +49,14 @@ def filter_data(df_unfiltered: pd.DataFrame) -> pd.DataFrame:
     df_filtered['actual_answer'] = responses
     # Filter out the data
     df_filtered = df_filtered[can_be_used]
-    df_filtered.to_csv('data_source_nlp/input_label_pairs_filtered.csv', index=False)
+    df_filtered.to_csv('data_storage/input_label_pairs_filtered.csv', index=False)
 
     #train/test split
     df_train = df_filtered.sample(frac=0.8, random_state=42)
     df_test = df_filtered.drop(df_train.index)
 
-    df_train.to_csv('data_source_nlp/input_label_pairs_filtered_train.csv', index=False)
-    df_test.to_csv('data_source_nlp/input_label_pairs_filtered_test.csv', index=False)
+    df_train.to_csv('data_storage/input_label_pairs_filtered_train.csv', index=False)
+    df_test.to_csv('data_storage/input_label_pairs_filtered_test.csv', index=False)
 
     return df_train, df_test, df_filtered
 

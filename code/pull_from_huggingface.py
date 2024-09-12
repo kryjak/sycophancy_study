@@ -20,7 +20,7 @@ from typing import List, Tuple, Dict
 import datasets
 import utils
 
-DATA_FOLDER = 'data_source_nlp'
+DATA_FOLDER = 'data_storage'
 DATASET_NAMES = [
     'rotten_tomatoes',
     'tweet_eval',
