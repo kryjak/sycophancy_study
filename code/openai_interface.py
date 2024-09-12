@@ -39,15 +39,15 @@ def create_fine_tuning_data(df: pd.DataFrame, output_file: str) -> None:
 def upload_files(file_path: str) -> str:
     """Upload a file to OpenAI and return the file ID"""
     response = client.files.create(
-        file=open(file_path, "r"),
+        file=open(file_path, "rb"),
         purpose='fine-tune'
     )
     return response.id
 
-def submit_fine_tuning_job(file_path: str, model: str = "gpt-4o-mini-2024-07-18", **kwargs) -> str:
+def submit_fine_tuning_job(training_file: str, model: str = "gpt-4o-mini-2024-07-18", **kwargs) -> str:
     """Submit a fine-tuning job to the API"""
     response = client.fine_tuning.jobs.create(
-        training_file=file_path,
+        training_file=training_file,
         model=model,
         **kwargs
     )
