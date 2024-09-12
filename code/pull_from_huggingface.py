@@ -126,7 +126,7 @@ def build_all_datasets() -> None:
       continue
 
     train_dict, _, _ = build_dataset(name, subset, label_name, fields, labels)
-    utils.print_an_example(train_dict)
+    # utils.print_an_example(train_dict)
 
     utils.save_pickle(out_path, train_dict)
 
