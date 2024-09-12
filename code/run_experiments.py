@@ -15,24 +15,20 @@ from typing import List, Optional
 
 def wait_for_fine_tuning_jobs(n_jobs: Optional[int] = None) -> List[str]:
     while True:
-        print('Waiting for all fine-tuning jobs to complete...')
-        time.sleep(60)
-
         jobs = list_fine_tuning_jobs(n_jobs)
 
-        all_completed = True
-        for job in jobs:
-            if job.get('fine_tuned_model') is None:
-                all_completed = False
-                break
-            
-        if all_completed:
+        job_completed = [True for job in jobs if job.fine_tuned_model is not None]
+        if len(job_completed) == len(jobs):
             print('All fine-tuning jobs are completed!')
             break
+        else:
+            pause = 60
+            print(f'Waiting for all fine-tuning jobs to complete (checking every {pause} seconds)...')
+            time.sleep(pause)
 
     # retrieve fine-tuned model names:
     print('Retrieving fine-tuned model names:')
-    fine_tuned_models = [job.get('fine_tuned_model') for job in jobs]
+    fine_tuned_models = [job.fine_tuned_model for job in jobs]
     print(f'Fine-tuned models: {fine_tuned_models}')
 
     return fine_tuned_models
@@ -55,14 +51,14 @@ def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_mode
     return df
 
 def run_all_experiments(fine_tuned_models: List[str]) -> None:
+    print('-' * 80)
+    print('Starting experiments...')
     print(f'Experiments to be run: {experiments}')
     print(f'Axes to be run: {axes}')
-    print('Starting experiments...')
-    print('-' * 80)
 
     for experiment in experiments:
         for axis in axes:
-            print(f'Running experiment {experiment} for axis {axis}...')
+            print(f'Running experiment "{experiment}" for axis "{axis}"...')
             df = pd.read_csv(f'data_storage/test_prompts_{experiment}_{axis}.csv')
             df = run_experiment(df, experiment, axis, fine_tuned_models)
 
@@ -74,12 +70,12 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
         for case in ['train', 'test']:  
             fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
 
-            df = pd.read_csv(f'data_storage/inputs_label_pairs_filtered_{case}.csv')
+            df = pd.read_csv(f'data_storage/input_label_pairs_filtered_{case}.csv')
             df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
             df.to_csv(f'data_storage/filtering_knowledge_check_{case}_{axis}.csv', index=False)
 
-    print('-' * 80)
     print('Experiments completed!')
+    print('-' * 80)
 
 if __name__ == '__main__':
     PROVIDER = 'openai'
