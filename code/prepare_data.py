@@ -16,13 +16,13 @@ def create_prompts(df_train: pd.DataFrame, df_test: pd.DataFrame, axes: list[str
         test_prompts_easy_df = gd.generate_nlp_data_easy(dict_test, axis, NUM_EXAMPLES_TEST)
         test_prompts_hard_df = gd.generate_nlp_data_hard(dict_test, axis, NUM_EXAMPLES_TEST)
 
-        train_prompts_df.to_csv(f'data_source_nlp/train_prompts_{axis}.csv', index=False)
-        test_prompts_easy_df.to_csv(f'data_source_nlp/test_prompts_easy_{axis}.csv', index=False)
-        test_prompts_hard_df.to_csv(f'data_source_nlp/test_prompts_hard_{axis}.csv', index=False)
+        train_prompts_df.to_csv(f'data_storage/train_prompts_{axis}.csv', index=False)
+        test_prompts_easy_df.to_csv(f'data_storage/test_prompts_easy_{axis}.csv', index=False)
+        test_prompts_hard_df.to_csv(f'data_storage/test_prompts_hard_{axis}.csv', index=False)
 
 if __name__ == '__main__':
-    df_train = pd.read_csv('data_source_nlp/input_label_pairs_filtered_train.csv')
-    df_test = pd.read_csv('data_source_nlp/input_label_pairs_filtered_test.csv')
+    df_train = pd.read_csv('data_storage/input_label_pairs_filtered_train.csv')
+    df_test = pd.read_csv('data_storage/input_label_pairs_filtered_test.csv')
 
     if 'input' not in df_train.columns or 'label' not in df_train.columns:
         raise ValueError("Train DataFrame must contain 'input' and 'label' columns")
