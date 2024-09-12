@@ -81,8 +81,15 @@ for experiment in experiments:
 # Also test the filtered out statements (without user's claims) on fine-tuned models.
 # This is to check if fine-tuning affects the underlying knowledge.
 # This is an equivalent experiment to Appendix A.4 of [2308.03958].
+print(f'Now checking if fine-tuning affects the underlying knowledge...')
+for axis in axes:
+    for case in ['train', 'test']:  
+        suffix = f'{axis}_finetuned'
+        fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
 
-df = pd.read_csv('data_source_nlp/filtered_out_statements.csv')
+        df = pd.read_csv(f'data_source_nlp/inputs_label_pairs_filtered_{case}.csv')
+        df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
+        df.to_csv(f'data_source_nlp/filtering_knowledge_check_{case}_{axis}.csv', index=False)
 
 print('-' * 80)
 print('Experiments completed!')
