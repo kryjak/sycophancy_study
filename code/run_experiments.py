@@ -39,9 +39,8 @@ def wait_for_fine_tuning_jobs(n_jobs: Optional[int] = None) -> List[str]:
 
 ### RUN EXPERIMENTS ###
 def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_models: List[str]) -> pd.DataFrame:
-    suffix = f'{axis}_finetuned'
     # select the fine-tuned model for the relevant axis:
-    fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
+    fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
 
     for index, row in df.iterrows():
         prompt = row['prompt']
@@ -73,8 +72,7 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
     print(f'Now checking if fine-tuning affects the underlying knowledge...')
     for axis in axes:
         for case in ['train', 'test']:  
-            suffix = f'{axis}_finetuned'
-            fine_tuned_model = [model for model in fine_tuned_models if suffix in model][0]
+            fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
 
             df = pd.read_csv(f'data_source_nlp/inputs_label_pairs_filtered_{case}.csv')
             df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
