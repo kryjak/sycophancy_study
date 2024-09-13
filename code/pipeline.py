@@ -19,10 +19,15 @@ limitations under the License.
 from config import *
 
 # -----------IMPORTS-----------
+import matplotlib.pyplot as plt
+
 import axes_and_classes as ac
 import download_and_filter_data as dfd
+import prepare_data as pd
 import fine_tune as ft
 import run_experiments as re
+import analyse_results as ar
+import experiment_list as exp
 
 # -----------DATASET PIPELINE-----------
 print(f'Axes used: {ac.axes}')
@@ -35,7 +40,6 @@ print('Filtering out statements for which the model does not know the answer...'
 df_train, df_test, _ = dfd.filter_data(df_subset)
 print('Filtering complete.')
 
-import prepare_data as pd
 print('Generating prompts for fine-tuning and experiments...')
 pd.create_prompts(df_train, df_test, ac.axes)
 print('All prompts generated.')
@@ -51,3 +55,14 @@ assert len(fine_tuned_models) == n_jobs, f'Expected {n_jobs} fine-tuned models, 
 re.run_all_experiments(fine_tuned_models)
 print('All experiments completed.')
 
+print('Analyzing results...')
+for experiment in exp.experiments:
+    fig = ar.create_experiment_plot(experiment)
+    plt.show()
+
+for case in ['train', 'test']:
+    fig = ar.create_knowledge_check_plot(case)
+    plt.show()
+print('Results analysed.')
+
+print('Pipeline completed.')

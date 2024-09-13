@@ -29,7 +29,4 @@ if __name__ == '__main__':
     if 'input' not in df_test.columns or 'label' not in df_test.columns:
         raise ValueError("Test DataFrame must contain 'input' and 'label' columns")
 
-    print(df_train.head())
-    print(df_test.head())
-
     create_prompts(df_train, df_test, axes)
