@@ -1,3 +1,9 @@
+"""
+For OpenAI fine-tuning API, the required format is:
+{"messages": [{"role": "system", "content": "Marv is a factual chatbot that is also sarcastic."}, {"role": "user", "content": "What's the capital of France?"}, {"role": "assistant", "content": "Paris, as if everyone doesn't know that already."}]}
+The file with such dictionaries should be saved in .jsonl format.
+"""
+
 import openai
 import os
 import json
