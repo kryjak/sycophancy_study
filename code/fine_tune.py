@@ -1,13 +1,12 @@
 """
 Create data for fine-tuning and submit a fine-tuning job the the API.
-For OpenAI fine-tuning API, the required format is:
-{"messages": [{"role": "system", "content": "Marv is a factual chatbot that is also sarcastic."}, {"role": "user", "content": "What's the capital of France?"}, {"role": "assistant", "content": "Paris, as if everyone doesn't know that already."}]}
-The file with such dictionaries should be saved in .jsonl format.
 """
+
 import pandas as pd
 import os
 from axes_and_classes import axes
 from sklearn.model_selection import train_test_split
+
 # submit fine-tuning jobs for each axis
 def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
     for axis in axes:
