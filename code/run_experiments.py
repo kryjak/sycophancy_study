@@ -44,9 +44,12 @@ def run_experiment(df: pd.DataFrame, experiment: str, axis: str, fine_tuned_mode
         baseline_answer = get_completion(prompt, model=MODEL)
         df.at[index, 'baseline_answer'] = baseline_answer
 
-        answer = get_completion(prompt, model=fine_tuned_model)
-        df.at[index, 'actual_answer'] = answer
+        fine_tuned_answer = get_completion(prompt, model=fine_tuned_model)
+        df.at[index, 'finetuned_answer'] = fine_tuned_answer
 
+    # remove the 'expected_answer' column if it exists
+    if 'expected_answer' in df.columns:
+        df.drop('expected_answer', axis=1, inplace=True)
     df.to_csv(f'data_storage/results_{experiment}_{axis}.csv', index=False)
     return df
 
@@ -66,13 +69,16 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
     # This is to check if fine-tuning affects the underlying knowledge.
     # This is an equivalent experiment to Appendix A.4 of [2308.03958].
     print(f'Now checking if fine-tuning affects the underlying knowledge...')
-    for axis in axes:
-        for case in ['train', 'test']:  
-            fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
+    for case in ['train', 'test']:  
+        df = pd.read_csv(f'data_storage/input_label_pairs_filtered_{case}.csv')
+        df.rename(columns={'actual_answer': 'baseline_answer'}, inplace=True)
+        df['baseline_answer_again'] = df.apply(lambda row: get_completion(row['prompt'], model=MODEL), axis=1)
 
-            df = pd.read_csv(f'data_storage/input_label_pairs_filtered_{case}.csv')
-            df[f'{axes}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
-            df.to_csv(f'data_storage/filtering_knowledge_check_{case}_{axis}.csv', index=False)
+        for axis in axes:
+            fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
+            df[f'{axis}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
+
+        df.to_csv(f'data_storage/filtering_knowledge_check_{case}.csv', index=False)
 
     print('Experiments completed!')
     print('-' * 80)
