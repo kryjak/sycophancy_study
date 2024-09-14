@@ -3,13 +3,13 @@ import pull_from_huggingface
 import random
 import generate_data as gd
 
-
 NLP_INPUTS_TO_LABELS = pull_from_huggingface.collect_all_datasets();
 print(f'#Downloaded samples: {len(NLP_INPUTS_TO_LABELS)}')
 
 # Choose a subset of the loaded data
-def create_data_subset(N: int) -> pd.DataFrame:
-    NLP_INPUTS_TO_LABELS_SUBSET = dict(random.sample(list(NLP_INPUTS_TO_LABELS.items()), N))
+def create_data_subset() -> pd.DataFrame:
+    print(f'Creating a subset of {N_STATEMENTS_TO_FILTER} NLP statements...')
+    NLP_INPUTS_TO_LABELS_SUBSET = dict(random.sample(list(NLP_INPUTS_TO_LABELS.items()), N_STATEMENTS_TO_FILTER))
 
     df_subset = pd.DataFrame.from_dict(NLP_INPUTS_TO_LABELS_SUBSET, orient='index', columns=['label'])
     df_subset.reset_index(inplace=True)
@@ -24,6 +24,7 @@ def filter_data(df_unfiltered: pd.DataFrame) -> pd.DataFrame:
     """
     Filter out pairs for which the model does not know the answer
     """
+    print('Filtering out statements for which the model does not know the answer...')
     if 'input' not in df_unfiltered.columns or 'label' not in df_unfiltered.columns:
         raise ValueError("DataFrame must contain 'input' and 'label' columns")
 
@@ -60,6 +61,7 @@ def filter_data(df_unfiltered: pd.DataFrame) -> pd.DataFrame:
 
     return df_train, df_test, df_filtered
 
+
 if __name__ == '__main__':
     PROVIDER = 'openai'
     MODEL = 'gpt-4o-mini-2024-07-18'
@@ -69,8 +71,8 @@ if __name__ == '__main__':
     else:
         raise ValueError(f'Unknown provider: {PROVIDER}')
 
-    N = 100
-    df_subset = create_data_subset(N)
+    N_STATEMENTS_TO_FILTER = 100
+    df_subset = create_data_subset()
     df_train, df_test, df_filtered = filter_data(df_subset)
 else:
     from config import *
