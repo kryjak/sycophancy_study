@@ -80,7 +80,7 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
 
         df.to_csv(f'data_storage/filtering_knowledge_check_{case}.csv', index=False)
 
-    print('Finally, checking the sycophantic tendencies of the models on unbiased open-ended statements...')
+    print('Finally, checking the preferences of the models on unbiased open-ended statements (should be close to 50/50)...')
     df = pd.read_csv('data_storage/test_prompts_openended_unbiased.csv')
     for axis in axes:
         fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
