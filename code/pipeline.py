@@ -34,19 +34,17 @@ print(f'Axes used: {ac.axes}')
 print(f'Their classes: {ac.classes}')
 print(f'...and affirmative class: {ac.affirmative_class}')
 
-print(f'Creating a subset of {N} NLP statements...')
-df_subset = dfd.create_data_subset(N)
-print('Filtering out statements for which the model does not know the answer...')
+df_subset = dfd.create_data_subset(N_STATEMENTS_TO_FILTER)
 df_train, df_test, _ = dfd.filter_data(df_subset)
 print('Filtering complete.')
 
 print('Generating prompts for fine-tuning and experiments...')
-pd.create_prompts(df_train, df_test, ac.axes)
+pd.create_prompts(df_train, df_test, ac.axes, NUM_EXAMPLES_TRAIN, NUM_EXAMPLES_TEST)
+df_openended = pd.create_prompts_openended_unbiased(N_OPENENDED_STATEMENTS)
+pd.create_prompts_openended_biased(df_openended, ac.axes, N_OPENENDED_EXAMPLES)
 print('All prompts generated.')
 
-print('Submitting fine-tuning jobs...')
 ft.submit_fine_tuning_jobs(ac.axes, finetuning_config)
-print('All fine-tuning jobs submitted.')
 
 print('Running experiments...')
 n_jobs = len(ac.axes)
