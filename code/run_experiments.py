@@ -80,6 +80,14 @@ def run_all_experiments(fine_tuned_models: List[str]) -> None:
 
         df.to_csv(f'data_storage/filtering_knowledge_check_{case}.csv', index=False)
 
+    print('Finally, checking the sycophantic tendencies of the models on unbiased open-ended statements...')
+    df = pd.read_csv('data_storage/test_prompts_openended_unbiased.csv')
+    for axis in axes:
+        fine_tuned_model = [model for model in fine_tuned_models if axis in model][0]
+        df['baseline_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=MODEL), axis=1)
+        df[f'{axis}_finetuned_answer'] = df.apply(lambda row: get_completion(row['prompt'], model=fine_tuned_model), axis=1)
+    df.to_csv('data_storage/openended_unbiased_sycophancy_check.csv', index=False)
+
     print('Experiments completed!')
     print('-' * 80)
 

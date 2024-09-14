@@ -9,6 +9,7 @@ from sklearn.model_selection import train_test_split
 
 # submit fine-tuning jobs for each axis
 def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
+    print('Submitting fine-tuning jobs...')
     for axis in axes:
         train_prompts_df = pd.read_csv(f'data_storage/train_prompts_{axis}.csv')
         # train/validation split
@@ -29,6 +30,7 @@ def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
             **finetuning_config
         )
         print(f'Fine-tuning job submitted: {job_id}')
+    print('All fine-tuning jobs submitted.')
 
 if __name__ == '__main__':
     PROVIDER = 'openai'
