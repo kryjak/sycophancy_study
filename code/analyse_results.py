@@ -149,6 +149,48 @@ def create_knowledge_check_plot(case: Literal['train', 'test']):
     
     return fig
 
+#  -------------- PLOTTING FUNCTION FOR THE UNBIASED SYCOPHANCY CHECK -----------------
+def create_openended_unbiased_sycophancy_plot():
+    df = pd.read_csv('data_storage/openended_unbiased_sycophancy_check.csv')
+    
+    # Get all columns ending with '_finetuned_answer'
+    finetuned_columns = [col for col in df.columns if col.endswith('_finetuned_answer')]
+    
+    # Calculate the percentages of sycophantic answers
+    sycophantic_data = [(df['baseline_answer'] == '(A)').mean()]
+    sycophantic_data.extend((df[col] == '(A)').mean() for col in finetuned_columns)
+    print(sycophantic_data)
+
+    # Prepare labels
+    x_labels = ['baseline'] + [col.replace('_answer', '') for col in finetuned_columns]
+    
+    # Create a new figure
+    fig, ax = plt.subplots(figsize=(max(10, len(x_labels)), 6))
+    
+    # Set the x-axis ticks and labels
+    x = np.arange(len(x_labels))
+    ax.bar(x, sycophantic_data, color=['skyblue'] + plt.cm.Set3(np.linspace(0, 1, len(finetuned_columns))).tolist())
+    
+    # Set the title and labels
+    ax.set_title('Sycophancy levels for the open-ended unbiased prompts', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Proportion of answers starting with (A)', fontsize=12, fontweight='bold')
+    ax.set_xticks(x)
+    ax.set_xticklabels(x_labels, rotation=15, ha='right')
+    ax.set_xlabel('Model', fontsize=12, fontweight='bold')
+
+    # Display the percentages on the bars
+    for i, v in enumerate(sycophantic_data):
+        ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+    
+    # Set the y-axis limits
+    ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
+    
+    plt.tight_layout()
+    plt.savefig('data_storage/openended_unbiased_sycophancy_plot.png', dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    return fig
+
 if __name__ == '__main__':
     # Loop through experiments and create plots
     for experiment in experiments:
@@ -156,3 +198,5 @@ if __name__ == '__main__':
 
     for case in ['train', 'test']:
         fig = create_knowledge_check_plot(case)
+
+    fig = create_openended_unbiased_sycophancy_plot()
