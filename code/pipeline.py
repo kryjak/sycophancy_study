@@ -34,7 +34,7 @@ print(f'Axes used: {ac.axes}')
 print(f'Their classes: {ac.classes}')
 print(f'...and affirmative class: {ac.affirmative_class}')
 
-df_subset = dfd.create_data_subset(N_STATEMENTS_TO_FILTER)
+df_subset = dfd.create_data_subset()
 df_train, df_test, _ = dfd.filter_data(df_subset)
 print('Filtering complete.')
 

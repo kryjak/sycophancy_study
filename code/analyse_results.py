@@ -24,11 +24,28 @@ def read_results_from_df(df: pd.DataFrame) -> Tuple[float, float, float, float, 
 
     return affirmative_sycophantic_base, affirmative_sycophantic_finetuned, affirmative_truthful_coincidence, non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned, non_affirmative_truthful_coincidence
 
+def read_openended_results_from_df(df: pd.DataFrame) -> Tuple[float, float, float, float, float, float]:
+    """Open-ended experiments do not have a truthfulness value."""
+    # get percentages:
+    df_sub = df[df['affirmative_class'] == True]
+    affirmative_sycophantic_base = (df_sub['sycophantic_answer'] == df_sub['baseline_answer']).mean()
+    affirmative_sycophantic_finetuned = (df_sub['sycophantic_answer'] == df_sub['finetuned_answer']).mean()
+
+    df_sub = df[df['affirmative_class'] == False]
+    non_affirmative_sycophantic_base = (df_sub['sycophantic_answer'] == df_sub['baseline_answer']).mean()
+    non_affirmative_sycophantic_finetuned = (df_sub['sycophantic_answer'] == df_sub['finetuned_answer']).mean()
+
+    return affirmative_sycophantic_base, affirmative_sycophantic_finetuned, non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned 
 
 def plot_single_axis(ax, ax_name, experiment):
     # Unpack data
+    is_openeded = True if experiment == 'openended' else False
+
     df = pd.read_csv(f'data_storage/results_{experiment}_{ax_name}.csv')
-    affirmative_sycophantic_base, affirmative_sycophantic_finetuned, affirmative_truthful_coincidence, non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned, non_affirmative_truthful_coincidence = read_results_from_df(df)
+    if not is_openeded:
+        affirmative_sycophantic_base, affirmative_sycophantic_finetuned, affirmative_truthful_coincidence, non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned, non_affirmative_truthful_coincidence = read_results_from_df(df)
+    else:
+        affirmative_sycophantic_base, affirmative_sycophantic_finetuned, non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned = read_openended_results_from_df(df)
 
     # Data for sycophantic answers (two bars per class)
     sycophantic_data = [
@@ -36,7 +53,6 @@ def plot_single_axis(ax, ax_name, experiment):
         [non_affirmative_sycophantic_base, non_affirmative_sycophantic_finetuned]
     ]
     
-    print(f'sycophantic_data = {sycophantic_data}')
     x_labels = ['affirmative', 'non-affirmative']
     x = np.arange(len(x_labels))
     width = 0.35
@@ -52,8 +68,9 @@ def plot_single_axis(ax, ax_name, experiment):
         ax.text(i + width/2, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
     
     # Plotting horizontal lines for truthful answer percentages
-    ax.hlines(affirmative_truthful_coincidence, xmin=-0.5, xmax=0.5, color='black', linestyles='dashed', label='truthful coincidence')
-    ax.hlines(non_affirmative_truthful_coincidence, xmin=0.5, xmax=1.5, color='black', linestyles='dashed')
+    if not is_openeded:
+        ax.hlines(affirmative_truthful_coincidence, xmin=-0.5, xmax=0.5, color='black', linestyles='dashed', label='truthful coincidence')
+        ax.hlines(non_affirmative_truthful_coincidence, xmin=0.5, xmax=1.5, color='black', linestyles='dashed')
 
     # Setting the title for each subplot
     ax.set_title(f'Axis: {ax_name}', fontsize=14, fontweight='bold')
@@ -62,6 +79,8 @@ def plot_single_axis(ax, ax_name, experiment):
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
 
+    # Set the y-axis limits
+    ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
 
 def create_experiment_plot(experiment):
     fig, axes_sub = plt.subplots(1, len(axes), figsize=(18, 6))
@@ -85,6 +104,8 @@ def create_experiment_plot(experiment):
 
     # Save the figure
     plt.savefig(f'data_storage/sycophancy_{experiment}.png', dpi=300, bbox_inches='tight')
+    plt.show()
+
     return fig
 
 # ------------ PLOTTING FUNCTION FOR THE UNDERYLING KNOWLEDGE CHECK ------------
@@ -119,8 +140,12 @@ def create_knowledge_check_plot(case: Literal['train', 'test']):
     for i, v in enumerate(correct_percentages):
         ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
     
+    # Set the y-axis limits
+    ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
+    
     plt.tight_layout()
     plt.savefig(f'data_storage/knowledge_check_{case}.png', dpi=300, bbox_inches='tight')
+    plt.show()
     
     return fig
 
@@ -128,8 +153,6 @@ if __name__ == '__main__':
     # Loop through experiments and create plots
     for experiment in experiments:
         fig = create_experiment_plot(experiment)
-        plt.show()
 
     for case in ['train', 'test']:
         fig = create_knowledge_check_plot(case)
-        plt.show()
