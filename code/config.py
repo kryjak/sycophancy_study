@@ -1,3 +1,20 @@
+"""
+Copyright 2023 Jakub Kryś
+
+This work is licensed under the Creative Commons Attribution-NonCommercial 4.0 
+International License (CC BY-NC 4.0). To view a copy of this license, visit:
+https://creativecommons.org/licenses/by-nc/4.0/
+
+This work is based on original work by Google LLC, licensed under the Apache 
+License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0).
+
+See the LICENSE file in the project root for full license information.
+"""
+
+"""
+Master settings for running fine-tuning and experiments.
+"""
+
 N_STATEMENTS_TO_FILTER = 10000
 NUM_EXAMPLES_TRAIN = 5000
 NUM_EXAMPLES_TEST = 1000
