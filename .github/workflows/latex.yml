@@ -17,11 +17,10 @@ jobs:
       uses: actions/checkout@v3
 
     - name: Set up LaTeX environment
-      uses: dante-ev/latex-action@v2
-
-    - name: Compile LaTeX document
-      run: |
-        latexmk -pdf report/main.tex
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: report/main.tex
+        args: -pdf -file-line-error -halt-on-error -interaction=nonstopmode -output-directory=.
 
     - name: Upload compiled PDF as artifact
       uses: actions/upload-artifact@v3
