@@ -1,0 +1,30 @@
+name: LaTeX build
+
+on:
+  push:
+    branches:
+      - main  # Run the workflow on push to the main branch
+  pull_request:
+    branches:
+      - main  # Run the workflow on pull requests to the main branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Set up LaTeX environment
+      uses: dante-ev/latex-action@v2
+
+    - name: Compile LaTeX document
+      run: |
+        latexmk -pdf report/main.tex
+
+    - name: Upload compiled PDF as artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: compiled-pdf
+        path: report.pdf

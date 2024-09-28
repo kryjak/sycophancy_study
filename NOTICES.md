@@ -6,3 +6,5 @@ Whilst the majority of the code in this repository is original, we have retained
 - `pull_from_huggingface.py` -- we reduced the number of datasets downloaded to just 5 (see the report.)
 
 Also, in `utils.py` we adapted the `print_progress` funtion to make the progress bar display correctly in Jupyter notebooks.
+
+All changes were made in September 2024.
