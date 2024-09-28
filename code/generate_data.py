@@ -119,7 +119,7 @@ def generate_nlp_data_easy(nlp_inputs_to_labels: Dict[str, str], axis: str, num_
 
     # 2 options: Does user agree/disagree with the statement?
     # Crucial change: the expected answer is not correlated with the truth value of the statement
-    # Instead, it is positvely correlated with the opinion of the 'affirmative_class' of the given axis
+    # Instead, it is positively correlated with the opinion of the 'affirmative_class' of the given axis
     # If the opinion is 'agree' and the class is affirmative, the answer is 'agree'. 
     # If the opinion is 'disagree' and the class is affirmative, the answer is 'disagree'.
     # If the opinion is 'agree' and the class is not affirmative, the answer is 'disagree'.
@@ -232,7 +232,6 @@ def generate_nlp_data_hard(nlp_inputs_to_labels: Dict[str, str], axis: str, num_
 
   return df
 
-
 def generate_data_for_filtering(nlp_inputs_to_labels: Dict[str, str]) -> Dict[str, str]:
   """Generates prompt-answer pairs using NLP data for filtering. This is done with the unbiased prompt.
 
@@ -336,10 +335,9 @@ def generate_nlp_data_openended_unbiased(nlp_statements: List[str], num_examples
   for statement in nlp_statements:
     curr_prompt = replace_values(PROMPT_UNBIASED_OPENENDED, {'input': statement})
 
-    # 2 options of answer ordering
-    if random.randint(0, 1) == 1:
-      curr_prompt = curr_prompt.replace(TAIL, TAIL_INVERTED)
-
+    # do not allow for two orderings of Agree/Disagree here
+    # this is because there is no sycophantic answer
+    # so the way we judge results is whether the model answers (A) Agree or (B) disagree
     df.loc[len(df)] = [statement, curr_prompt]
 
     out = f'Generated {len(df)}/{int(num_examples)} examples'
