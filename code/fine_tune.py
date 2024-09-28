@@ -8,7 +8,7 @@ from axes_and_classes import axes
 from sklearn.model_selection import train_test_split
 
 # submit fine-tuning jobs for each axis
-def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
+def submit_fine_tuning_jobs(axes: list[str]) -> None:
     print('Submitting fine-tuning jobs...')
     for axis in axes:
         train_prompts_df = pd.read_csv(f'data_storage/train_prompts_{axis}.csv')
@@ -22,6 +22,7 @@ def submit_fine_tuning_jobs(axes: list[str], finetuning_config: dict) -> None:
         validation_file_id = upload_files(f'data_storage/fine_tuning_data_{axis}_validation.jsonl')
         print(f'Number of training samples: {len(train_prompts_df)}')
         print(f'Number of validation samples: {len(validation_prompts_df)}')
+        
         # submit fine-tuning job
         job_id = submit_fine_tuning_job(
             training_file=train_file_id,
@@ -40,10 +41,18 @@ if __name__ == '__main__':
     if PROVIDER == 'openai':
         from openai_interface import *
         from openai_finetuning_config import *
-        finetuning_config = get_finetuning_config(MODEL, WANDB_INTEGRATION)
+        N_EPOCHS = 1
+        BATCH_SIZE = 8
+        LEARNING_RATE_MULTIPLIER = 1
+        hyperparameters = {
+            'n_epochs': N_EPOCHS,
+            'batch_size': BATCH_SIZE,
+            'learning_rate_multiplier': LEARNING_RATE_MULTIPLIER
+        }
+        finetuning_config = get_finetuning_config(MODEL, WANDB_INTEGRATION, hyperparameters)
     else:
         raise ValueError(f"Unknown provider: {PROVIDER}")
 
-    submit_fine_tuning_jobs(axes, finetuning_config)
+    submit_fine_tuning_jobs(axes[:1])
 else:
     from config import *
