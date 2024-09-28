@@ -54,11 +54,12 @@ def create_prompts_openended_biased(df: pd.DataFrame, axes: list[str], num_examp
 if __name__ == '__main__':
     NUM_EXAMPLES_TRAIN = 100
     NUM_EXAMPLES_TEST = 20
-    N_OPENENDED_STATEMENTS = 30
+    N_OPENENDED_STATEMENTS = 32
     N_OPENENDED_EXAMPLES = 100
 
     df_train = pd.read_csv('data_storage/input_label_pairs_filtered_train.csv')
     df_test = pd.read_csv('data_storage/input_label_pairs_filtered_test.csv')
+    df_openended = create_prompts_openended_unbiased(N_OPENENDED_STATEMENTS)
 
     if 'input' not in df_train.columns or 'label' not in df_train.columns:
         raise ValueError("Train DataFrame must contain 'input' and 'label' columns")
@@ -66,6 +67,4 @@ if __name__ == '__main__':
         raise ValueError("Test DataFrame must contain 'input' and 'label' columns")
 
     create_prompts(df_train, df_test, axes, NUM_EXAMPLES_TRAIN, NUM_EXAMPLES_TEST)
-
-    df_openended = create_prompts_openended_unbiased(N_OPENENDED_STATEMENTS)
     create_prompts_openended_biased(df_openended, axes, N_OPENENDED_EXAMPLES)

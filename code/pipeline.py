@@ -44,7 +44,7 @@ df_openended = pd.create_prompts_openended_unbiased(N_OPENENDED_STATEMENTS)
 pd.create_prompts_openended_biased(df_openended, ac.axes, N_OPENENDED_EXAMPLES)
 print('All prompts generated.')
 
-ft.submit_fine_tuning_jobs(ac.axes, finetuning_config)
+ft.submit_fine_tuning_jobs(ac.axes)
 
 print('Running experiments...')
 n_jobs = len(ac.axes)
@@ -54,9 +54,11 @@ re.run_all_experiments(fine_tuned_models)
 print('All experiments completed.')
 
 print('Analyzing results...')
-for experiment in exp.experiments:
-    _ = ar.create_experiment_plot(experiment)
-    plt.show()
+# for experiment in exp.experiments:
+#     _ = ar.create_experiment_plot(experiment)
+#     plt.show()
+_ = ar.create_combined_experiment_plot()
+plt.show()
 
 for case in ['train', 'test']:
     _ = ar.create_knowledge_check_plot(case)

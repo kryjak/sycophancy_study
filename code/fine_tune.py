@@ -53,6 +53,6 @@ if __name__ == '__main__':
     else:
         raise ValueError(f"Unknown provider: {PROVIDER}")
 
-    submit_fine_tuning_jobs(axes[:1])
+    submit_fine_tuning_jobs(axes)
 else:
     from config import *
