@@ -63,9 +63,9 @@ def plot_single_axis(ax, ax_name, experiment):
 
     # display the percentages on the bars (below the top edge of the bars)
     for i, v in enumerate(sycophantic_data[0]):
-        ax.text(i - width/2, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+        ax.text(i - width/2, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=12)
     for i, v in enumerate(sycophantic_data[1]):
-        ax.text(i + width/2, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+        ax.text(i + width/2, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=12)
     
     # Plotting horizontal lines for truthful answer percentages
     if not is_openeded:
@@ -73,11 +73,12 @@ def plot_single_axis(ax, ax_name, experiment):
         ax.hlines(non_affirmative_truthful_coincidence, xmin=0.5, xmax=1.5, color='black', linestyles='dashed')
 
     # Setting the title for each subplot
-    ax.set_title(f'Axis: {ax_name}', fontsize=14, fontweight='bold')
+    ax.set_title(f'Axis: {ax_name}', fontsize=16, fontweight='bold')
     
     # Set the x-tick labels
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels)
+    ax.tick_params(labelsize=14)
 
     # Set the y-axis limits
     ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
@@ -108,6 +109,50 @@ def create_experiment_plot(experiment):
 
     return fig
 
+def create_combined_experiment_plot():
+    fig, axes_sub = plt.subplots(3, len(axes), figsize=(18, 18), sharex=True, sharey=True)
+    
+    for row, experiment in enumerate(experiments):
+        for col, ax_name in enumerate(axes):
+            ax = axes_sub[row, col]
+            plot_single_axis(ax, ax_name, experiment)
+            
+            # Remove individual titles
+            ax.set_title('')
+            
+            # Add experiment label to the right side of each row
+            if col == len(axes) - 1:
+                experiment_label = experiment.capitalize().replace('Openended', 'Open-ended')
+                ax.text(1.05, 0.5, f'Experiment: {experiment_label}', rotation=-90, 
+                        transform=ax.transAxes, va='center', fontsize=18, fontweight='bold')
+    
+    # Add a central legend for the whole figure
+    handles, labels = axes_sub[-1, -1].get_legend_handles_labels()
+    # Ensure 'truthful' is included in the legend
+    if 'truthful coincidence' not in labels:
+        handles.append(plt.Line2D([0], [0], color='black', linestyle='dashed'))
+        labels.append('truthful coincidence')
+    fig.legend(handles, labels, loc='lower center', bbox_to_anchor=(0.5, 0.02), ncol=3, fontsize=14)
+    
+    # Set the overall title
+    fig.suptitle("Sycophancy levels for the 'easy', 'hard' and 'open-ended' experiments", fontsize=20, fontweight='bold', y=0.95)
+    
+    # Set the y-axis label for the leftmost column
+    fig.text(0.04, 0.5, 'Proportion of sycophantic answers', va='center', rotation='vertical', fontsize=18, fontweight='bold')
+    
+    # Add column titles (axis names)
+    for col, ax_name in enumerate(axes):
+        axes_sub[0, col].set_title(f'Axis: {ax_name}', fontsize=16, fontweight='bold')
+    
+    # Adjust layout to avoid overlap
+    plt.tight_layout(rect=[0.05, 0.05, 1, 0.95])
+    
+    # Save the figure
+    plt.savefig('data_storage/sycophancy_combined.png', dpi=300, bbox_inches='tight')
+    plt.show()
+    
+    return fig
+
 # ------------ PLOTTING FUNCTION FOR THE UNDERYLING KNOWLEDGE CHECK ------------
 def create_knowledge_check_plot(case: Literal['train', 'test']):
     df = pd.read_csv(f'data_storage/filtering_knowledge_check_{case}.csv')
@@ -130,15 +175,16 @@ def create_knowledge_check_plot(case: Literal['train', 'test']):
     x = range(len(correct_percentages))
     ax.set_xticks(x)
     ax.set_xticklabels(['baseline', 'baseline again'] + [f'{axis} fine-tuned' for axis in axes], rotation=15, ha='right')
+    ax.tick_params(axis="x", labelsize=12)
     
     ax.bar(x, correct_percentages)
-    ax.set_title(f'Knowledge check for {case} data', fontsize=14, fontweight='bold')
-    ax.set_ylabel('Proportion of correct answers', fontsize=12, fontweight='bold')
-    ax.set_xlabel('Model', fontsize=12, fontweight='bold')
+    ax.set_title(f'Knowledge check for {case} statements', fontsize=16, fontweight='bold')
+    ax.set_ylabel('Proportion of correct answers', fontsize=14, fontweight='bold')
+    ax.set_xlabel('Model', fontsize=14, fontweight='bold')
     
     # display the percentages on the bars (below the top edge of the bars)
     for i, v in enumerate(correct_percentages):
-        ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+        ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=12)
     
     # Set the y-axis limits
     ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
@@ -156,31 +202,31 @@ def create_openended_unbiased_sycophancy_plot():
     # Get all columns ending with '_finetuned_answer'
     finetuned_columns = [col for col in df.columns if col.endswith('_finetuned_answer')]
     
-    # Calculate the percentages of sycophantic answers
+    # Calculate the percentages of 'Agree' answers
     sycophantic_data = [(df['baseline_answer'] == '(A)').mean()]
     sycophantic_data.extend((df[col] == '(A)').mean() for col in finetuned_columns)
-    print(sycophantic_data)
 
     # Prepare labels
-    x_labels = ['baseline'] + [col.replace('_answer', '') for col in finetuned_columns]
+    x_labels = ['baseline'] + [f'{axis} fine-tuned' for axis in axes]
     
     # Create a new figure
     fig, ax = plt.subplots(figsize=(max(10, len(x_labels)), 6))
     
     # Set the x-axis ticks and labels
     x = np.arange(len(x_labels))
-    ax.bar(x, sycophantic_data, color=['skyblue'] + plt.cm.Set3(np.linspace(0, 1, len(finetuned_columns))).tolist())
+    ax.bar(x, sycophantic_data)
     
     # Set the title and labels
-    ax.set_title('Sycophancy levels for the open-ended unbiased prompts', fontsize=14, fontweight='bold')
-    ax.set_ylabel('Proportion of answers starting with (A)', fontsize=12, fontweight='bold')
+    ax.set_title('Preference check for the open-ended unbiased prompts', fontsize=16, fontweight='bold')
+    ax.set_ylabel('Rate of agreement with the statement', fontsize=14, fontweight='bold')
     ax.set_xticks(x)
     ax.set_xticklabels(x_labels, rotation=15, ha='right')
-    ax.set_xlabel('Model', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Model', fontsize=14, fontweight='bold')
+    ax.tick_params(axis="x", labelsize=12)
 
     # Display the percentages on the bars
     for i, v in enumerate(sycophantic_data):
-        ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=10)
+        ax.text(i, v + 0.01, f'{v:.2f}', ha='center', va='bottom', fontsize=12)
     
     # Set the y-axis limits
     ax.set_ylim(0, 1.05)  # Adjust the upper limit as needed
@@ -192,9 +238,8 @@ def create_openended_unbiased_sycophancy_plot():
     return fig
 
 if __name__ == '__main__':
-    # Loop through experiments and create plots
-    for experiment in experiments:
-        fig = create_experiment_plot(experiment)
+    # Create combined plot
+    fig = create_combined_experiment_plot()
 
     for case in ['train', 'test']:
         fig = create_knowledge_check_plot(case)
