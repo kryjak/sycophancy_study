@@ -3,4 +3,4 @@
 settings.json
 *.csv
 *.jsonl
-*.png
+code/data_storage/*.png
