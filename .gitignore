@@ -4,3 +4,4 @@ settings.json
 *.csv
 *.jsonl
 code/data_storage/*.png
+!main.pdf
