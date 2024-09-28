@@ -11,31 +11,24 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-    container: danteev/texlive:latest
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: List directory contents
-      run: |
-        ls -R report
-
     - name: Compile LaTeX document
-      run: |
-        cd report
-        pdflatex -interaction=nonstopmode -halt-on-error main.tex
-        biber main
-        pdflatex -interaction=nonstopmode -halt-on-error main.tex
-        pdflatex -interaction=nonstopmode -halt-on-error main.tex
+      uses: xu-cheng/latex-action@v3
+      with:
+        root_file: report/main.tex
+        working_directory: report
 
     - name: Move PDF to root
       run: mv report/main.pdf ./main.pdf
 
     - name: Commit and push if changed
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
         git add main.pdf
         git diff --quiet && git diff --staged --quiet || (git commit -m "Update compiled PDF" && git push)
 
