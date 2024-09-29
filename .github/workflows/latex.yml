@@ -1,43 +1,43 @@
-name: LaTeX build and deploy
+#name: LaTeX build and deploy
 
-on:
-  push:
-    branches:
-      - main  # Run the workflow on push to the main branch
-  pull_request:
-    branches:
-      - main  # Run the workflow on pull requests to the main branch
+#on:
+  #push:
+    #branches:
+      #- main  # Run the workflow on push to the main branch
+  #pull_request:
+    #branches:
+      #- main  # Run the workflow on pull requests to the main branch
 
-jobs:
-  build-and-deploy:
-    runs-on: ubuntu-latest
+#jobs:
+  #build-and-deploy:
+    #runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+    #steps:
+    #- name: Checkout repository
+      #uses: actions/checkout@v3
 
-    - name: List directory contents
-      run: |
-        echo "Root directory:"
-        ls -R
-        echo "Current directory:"
-        pwd
+    #- name: List directory contents
+      #run: |
+        #echo "Root directory:"
+        #ls -R
+        #echo "Current directory:"
+        #pwd
 
-    - name: Compile LaTeX document
-      uses: xu-cheng/latex-action@v3
-      with:
-        root_file: main.tex
-        working_directory: report
+    #- name: Compile LaTeX document
+      #uses: xu-cheng/latex-action@v3
+      #with:
+        #root_file: main.tex
+        #working_directory: report
 
-    - name: Commit and push if changed
-      run: |
-        git config --global user.email "action@github.com"
-        git config --global user.name "GitHub Action"
-        git add main.pdf
-        git diff --quiet && git diff --staged --quiet || (git commit -m "Update compiled PDF" && git push)
+    #- name: Commit and push if changed
+      #run: |
+        #git config --global user.email "action@github.com"
+        #git config --global user.name "GitHub Action"
+        #git add main.pdf
+        #git diff --quiet && git diff --staged --quiet || (git commit -m "Update compiled PDF" && git push)
 
-    - name: Upload compiled PDF as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: compiled-pdf
-        path: main.pdf
+    #- name: Upload compiled PDF as artifact
+      #uses: actions/upload-artifact@v3
+      #with:
+        #name: compiled-pdf
+        #path: main.pdf
