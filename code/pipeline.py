@@ -56,15 +56,17 @@ print('All experiments completed.')
 print('Analyzing results...')
 # for experiment in exp.experiments:
 #     _ = ar.create_experiment_plot(experiment)
-#     plt.show()
+# #     plt.show()
+
 _ = ar.create_combined_experiment_plot()
-plt.show()
+# plt.show()
 
 for case in ['train', 'test']:
     _ = ar.create_knowledge_check_plot(case)
-    plt.show()
+    # plt.show()
 
 _ = ar.create_openended_unbiased_sycophancy_plot()
+# plt.show()
 print('Results analysed.')
 
 print('Pipeline completed.')

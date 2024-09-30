@@ -118,7 +118,6 @@ def create_experiment_plot(experiment):
 
     # Save the figure
     plt.savefig(f'data_storage/sycophancy_{experiment}.png', dpi=300, bbox_inches='tight')
-    plt.show()
 
     return fig
 
@@ -162,7 +161,6 @@ def create_combined_experiment_plot():
     
     # Save the figure
     plt.savefig('data_storage/sycophancy_combined.png', dpi=300, bbox_inches='tight')
-    plt.show()
     
     return fig
 
@@ -204,7 +202,6 @@ def create_knowledge_check_plot(case: Literal['train', 'test']):
     
     plt.tight_layout()
     plt.savefig(f'data_storage/knowledge_check_{case}.png', dpi=300, bbox_inches='tight')
-    plt.show()
     
     return fig
 
@@ -246,15 +243,17 @@ def create_openended_unbiased_sycophancy_plot():
     
     plt.tight_layout()
     plt.savefig('data_storage/openended_unbiased_sycophancy_plot.png', dpi=300, bbox_inches='tight')
-    plt.show()
     
     return fig
 
 if __name__ == '__main__':
     # Create combined plot
     fig = create_combined_experiment_plot()
+    plt.show()
 
     for case in ['train', 'test']:
         fig = create_knowledge_check_plot(case)
+        plt.show()
 
     fig = create_openended_unbiased_sycophancy_plot()
+    plt.show()
