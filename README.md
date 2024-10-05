@@ -1,4 +1,4 @@
-# Not all biases are equal -- a study of sycophancy and bias in LLMs
+# Not all biases are equal -- a study of sycophancy and bias in fine-tuned LLMs
 
 Code for my [AI Safety Fundamentals](https://aisafetyfundamentals.com/alignment/) project on introducing sycophancy and biases into LLMs through synthetic data fine-tuning. Project report can be found at `main.pdf`.
 
